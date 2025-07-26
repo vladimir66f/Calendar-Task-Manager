@@ -1,0 +1,73 @@
+#include "date.h"
+class Calendar : public Date
+{
+public:
+    Calendar() {update_time();}
+    void print_year(const Date& date) const
+    {
+        cout << setw(62) << right << date.get_year() << "\n";
+        for(unsigned i = 0; i != 12; ++i)
+        {
+            Date curr_date (year_month_day{date.get_year(), month{1 + i}, day{1}}); // Start from month 1
+            print_month(curr_date);
+        }
+    }
+    void print_month(const Date& date) const
+    {
+        cout << setw(7) << left << "Month"; // For month
+        cout << setw(57) << right << date.get_month() << "\n"; 
+        print_head_week();
+        for (unsigned week = 0; week < 6; ++week) // 6 weeks - maximum possible in a month
+        {
+            Date curr_date (year_month_day{date.get_year(), date.get_month(), day{1 + week * 7}}); // Start from day 1
+            print_week(curr_date);
+        }
+    }
+    void print_head_week() const
+    {
+        weekday temp{1};
+        cout << setw(7) << left << "Weekday";
+        for(int i = 0; i != 7; ++i)
+        {
+            cout << setw(15) << right << temp;
+            ++temp;
+        }
+        cout << "\n";
+    }
+    void print_week(const Date& date) const
+    {
+        int diff_with_mon = date.get_weekday().c_encoding() != 0 ? date.get_weekday().c_encoding() - 1 : 6; // Difference from Monday
+        day day_with_mon = date.get_day() - days{diff_with_mon}; // Start from Monday
+        cout << setw(7) << left << "Day";
+        bool flag_today = false;
+        auto last_day = year_month_day_last(date.get_year(), month_day_last(date.get_month())).day();
+        for(int i = 0; i != 7; ++i) 
+        {
+            if(day_with_mon == day(0) || day_with_mon > day(31)|| last_day < day_with_mon) // Check date validity
+            {
+                cout << setw(15) << right << "--";
+                day_with_mon += days{1};
+                continue;
+            }
+            if(day_with_mon == get_day() && date.get_month() == get_month() && date.get_year() == get_year())
+            {
+                flag_today = true;
+                cout << setw(13) << right << '|' << day_with_mon << '|';
+            }
+            else
+            {
+                cout << setw(15 - flag_today) << right << day_with_mon;
+                flag_today = false;
+            }
+            day_with_mon += days{1};
+        }
+        cout << "\n";
+    }
+    void print_day(const Date& date) const
+    {
+        cout << date.get_day() << " " << date.get_month() << " " << date.get_year() << "\n" << date.get_weekday() << "\n";
+        if(date == this->get_date())
+            cout << "Today\n";
+    }
+    ~Calendar() {cout << "Calendar was deleted!\n";}
+};
